@@ -1,94 +1,152 @@
+/************************************************************************
+          Copyright 1988, 1991 by Carnegie Mellon University
+
+                          All Rights Reserved
+
+   Permission to use, copy, modify, and distribute this software and its
+   documentation for any purpose and without fee is hereby granted, provided
+   that the above copyright notice appear in all copies and that both that
+   copyright notice and this permission notice appear in supporting
+   documentation, and that the name of Carnegie Mellon University not be used
+   in advertising or publicity pertaining to distribution of the software
+   without specific, written prior permission.
+
+   CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+   SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.
+   IN NO EVENT SHALL CMU BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+   DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+   PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+   ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+   SOFTWARE.
+************************************************************************/
+
 /*
- *	Copied from LiMon - BOOTP.
+ * Bootstrap Protocol (BOOTP).  RFC951 and RFC1395.
  *
- *	Copyright 1994, 1995, 2000 Neil Russell.
- *	(See License)
- *	Copyright 2000 Paolo Scaffardi
+ * $FreeBSD: head/libexec/bootpd/bootp.h 83941 2001-09-25 21:02:10Z iedowse $
+ *
+ *
+ * This file specifies the "implementation-independent" BOOTP protocol
+ * information which is common to both client and server.
+ *
  */
 
-#ifndef __BOOTP_H__
-#define __BOOTP_H__
 
-#ifndef __NET_H__
-#include <net.h>
-#endif /* __NET_H__ */
+#include <sys/types.h>  /* for int32, u_int32 */
+#include <unistd.h>
+#include <inttypes.h>
 
-/**********************************************************************/
+#define BP_CHADDR_LEN  16
+#define BP_SNAME_LEN   64
+#define BP_FILE_LEN 128
+#define BP_VEND_LEN  64
+#define BP_MINPKTSZ 300 /* to check sizeof(struct bootp) */
+/* Overhead to fit a bootp message into an Ethernet packet. */
+#define BP_MSG_OVERHEAD (14 + 20 + 8) /* Ethernet + IP + UDP headers */
+
+struct bootp {
+        unsigned char bp_op;    /* packet opcode type */
+        unsigned char bp_htype;     /* hardware addr type */
+        unsigned char bp_hlen;    /* hardware addr length */
+        unsigned char bp_hops;    /* gateway hops */
+        u_int32_t bp_xid;       /* transaction ID */
+        unsigned short bp_secs;   /* seconds since boot began */
+        unsigned short bp_flags;    /* RFC1532 broadcast, etc. */
+        struct in_addr bp_ciaddr;   /* client IP address */
+        struct in_addr bp_yiaddr;   /* 'your' IP address */
+        struct in_addr bp_siaddr;   /* server IP address */
+        struct in_addr bp_giaddr;   /* gateway IP address */
+        unsigned char bp_chaddr[BP_CHADDR_LEN]; /* client hardware address */
+        char bp_sname[BP_SNAME_LEN];    /* server host name */
+        char bp_file[BP_FILE_LEN];    /* boot file name */
+        unsigned char bp_vend[BP_VEND_LEN]; /* vendor-specific area */
+        /* note that bp_vend can be longer, extending to end of packet. */
+};
 
 /*
- *	BOOTP header.
+ * UDP port numbers, server and client.
  */
-#if defined(CONFIG_CMD_DHCP)
-/* Minimum DHCP Options size per RFC2131 - results in 576 byte pkt */
-#define OPT_FIELD_SIZE 312
-#if defined(CONFIG_BOOTP_VENDOREX)
-extern u8 *dhcp_vendorex_prep(u8 *e); /*rtn new e after add own opts. */
-extern u8 *dhcp_vendorex_proc(u8 *e); /*rtn next e if mine,else NULL  */
-#endif
-#else
-#define OPT_FIELD_SIZE 64
-#endif
+#define IPPORT_BOOTPS   67
+#define IPPORT_BOOTPC   68
 
-struct bootp_hdr {
-	u8		bp_op;		/* Operation			*/
-# define OP_BOOTREQUEST	1
-# define OP_BOOTREPLY	2
-	u8		bp_htype;	/* Hardware type		*/
-# define HWT_ETHER	1
-	u8		bp_hlen;	/* Hardware address length	*/
-# define HWL_ETHER	6
-	u8		bp_hops;	/* Hop count (gateway thing)	*/
-	u32		bp_id;		/* Transaction ID		*/
-	u16		bp_secs;	/* Seconds since boot		*/
-	u16		bp_spare1;	/* Alignment			*/
-	struct in_addr	bp_ciaddr;	/* Client IP address		*/
-	struct in_addr	bp_yiaddr;	/* Your (client) IP address	*/
-	struct in_addr	bp_siaddr;	/* Server IP address		*/
-	struct in_addr	bp_giaddr;	/* Gateway IP address		*/
-	u8		bp_chaddr[16];	/* Client hardware address	*/
-	char		bp_sname[64];	/* Server host name		*/
-	char		bp_file[128];	/* Boot file name		*/
-	char		bp_vend[OPT_FIELD_SIZE]; /* Vendor information	*/
-} __attribute__((packed));
+#define BOOTREPLY   2
+#define BOOTREQUEST   1
 
-#define BOOTP_HDR_SIZE	sizeof(struct bootp_hdr)
-
-/**********************************************************************/
 /*
- *	Global functions and variables.
+ * Hardware types from Assigned Numbers RFC.
+ */
+#define HTYPE_ETHERNET      1
+#define HTYPE_EXP_ETHERNET    2
+#define HTYPE_AX25      3
+#define HTYPE_PRONET      4
+#define HTYPE_CHAOS     5
+#define HTYPE_IEEE802     6
+#define HTYPE_ARCNET      7
+
+/*
+ * Vendor magic cookie (v_magic) for CMU
+ */
+#define VM_CMU    "CMU"
+
+/*
+ * Vendor magic cookie (v_magic) for RFC1048
+ */
+#define VM_RFC1048  { 99, 130, 83, 99 }
+
+
+
+/*
+ * Tag values used to specify what information is being supplied in
+ * the vendor (options) data area of the packet.
+ */
+/* RFC 1048 */
+#define TAG_END     ((unsigned char) 255)
+#define TAG_PAD     ((unsigned char)   0)
+#define TAG_SUBNET_MASK   ((unsigned char)   1)
+#define TAG_TIME_OFFSET   ((unsigned char)   2)
+#define TAG_GATEWAY   ((unsigned char)   3)
+#define TAG_TIME_SERVER   ((unsigned char)   4)
+#define TAG_NAME_SERVER   ((unsigned char)   5)
+#define TAG_DOMAIN_SERVER ((unsigned char)   6)
+#define TAG_LOG_SERVER    ((unsigned char)   7)
+#define TAG_COOKIE_SERVER ((unsigned char)   8)
+#define TAG_LPR_SERVER    ((unsigned char)   9)
+#define TAG_IMPRESS_SERVER  ((unsigned char)  10)
+#define TAG_RLP_SERVER    ((unsigned char)  11)
+#define TAG_HOST_NAME   ((unsigned char)  12)
+#define TAG_BOOT_SIZE   ((unsigned char)  13)
+/* RFC 1395 */
+#define TAG_DUMP_FILE   ((unsigned char)  14)
+#define TAG_DOMAIN_NAME   ((unsigned char)  15)
+#define TAG_SWAP_SERVER   ((unsigned char)  16)
+#define TAG_ROOT_PATH   ((unsigned char)  17)
+/* RFC 1497 */
+#define TAG_EXTEN_FILE    ((unsigned char)  18)
+/* RFC 1533 */
+#define TAG_NIS_DOMAIN    ((unsigned char)  40)
+#define TAG_NIS_SERVER    ((unsigned char)  41)
+#define TAG_NTP_SERVER    ((unsigned char)  42)
+/* DHCP maximum message size. */
+#define TAG_MAX_MSGSZ   ((unsigned char)  57)
+
+/* XXX - Add new tags here */
+
+
+/*
+ * "vendor" data permitted for CMU bootp clients.
  */
 
-/* bootp.c */
-extern u32	bootp_id;		/* ID of cur BOOTP request	*/
-extern int	bootp_try;
+struct cmu_vend {
+        char v_magic[4]; /* magic number */
+        u_int32_t v_flags; /* flags/opcodes, etc. */
+        struct in_addr v_smask; /* Subnet mask */
+        struct in_addr v_dgate; /* Default gateway */
+        struct in_addr v_dns1, v_dns2; /* Domain name servers */
+        struct in_addr v_ins1, v_ins2; /* IEN-116 name servers */
+        struct in_addr v_ts1, v_ts2; /* Time servers */
+        int32_t v_unused[6]; /* currently unused */
+};
 
 
-/* Send a BOOTP request */
-void bootp_reset(void);
-void bootp_request(void);
-
-/****************** DHCP Support *********************/
-void dhcp_request(void);
-
-/* DHCP States */
-typedef enum { INIT,
-	       INIT_REBOOT,
-	       REBOOTING,
-	       SELECTING,
-	       REQUESTING,
-	       REBINDING,
-	       BOUND,
-	       RENEWING } dhcp_state_t;
-
-#define DHCP_DISCOVER 1
-#define DHCP_OFFER    2
-#define DHCP_REQUEST  3
-#define DHCP_DECLINE  4
-#define DHCP_ACK      5
-#define DHCP_NAK      6
-#define DHCP_RELEASE  7
-
-/**********************************************************************/
-
-#endif /* __BOOTP_H__ */
-
+/* v_flags values */
+#define VF_SMASK  1 /* Subnet mask field contains valid data */
