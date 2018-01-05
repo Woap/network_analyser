@@ -55,15 +55,11 @@ void print_payload(const u_char *payload, int len);
 
 void print_tcpoptions(const struct tcphdr *tcp, int size_ip,const u_char * packet)
 {
-        // OPT
 
         int option_size;
-        const u_char *payload;          /* Packet payload */
+        const u_char *payload;
         payload = (u_char *)(packet + sizeof(struct ether_header) + size_ip + 20);
-
-
         option_size = tcp->th_off*4 - 20;
-
 
         const u_char *ch = payload;
         int eol=0;
@@ -75,7 +71,6 @@ void print_tcpoptions(const struct tcphdr *tcp, int size_ip,const u_char * packe
 
                 for ( int i = 0; i < option_size; i++)
                 {
-
                         switch (*ch) {
                         case TCPOPT_EOL: printf( " End of option list \n"); break;
                         case TCPOPT_NOP: printf( " No operation (NOP),"); eol=1; break;
@@ -87,7 +82,6 @@ void print_tcpoptions(const struct tcphdr *tcp, int size_ip,const u_char * packe
                         case TCPOLEN_TSTAMP_APPA: printf( "   IP "); break;
                         default:
                                 printf("UNKNOWN, ");
-
                         }
 
                         if ( eol == 0)
@@ -105,14 +99,10 @@ void print_tcpoptions(const struct tcphdr *tcp, int size_ip,const u_char * packe
                                 }
                                 ch--;
                         }
-
                         eol=0;
-
                         ch++;
-
                 }
                 printf("\n");
-
         }
 }
 
@@ -133,9 +123,7 @@ void print_dns(const u_char *payload, int len)
                 if ( 0x0100 == __builtin_bswap16(dns->flags))
                 {
                         printf(" - Protocol : DNS - Length : %d - Info : Standart query - Transaction ID %#03x \n",paquet_length,__builtin_bswap16(dns->id));
-
                 }
-
         }
 
         if ( verbosite == 3)
@@ -158,11 +146,11 @@ void print_dns(const u_char *payload, int len)
                 printf("   Queries\n");
 
 
-                const u_char *queries_answers;
-                queries_answers = (u_char *)(payload+ sizeof(struct dns_header));
+                //const u_char *queries_answers;
+                //queries_answers = (u_char *)(payload+ sizeof(struct dns_header));
 
                 printf("   ---\n");
-                print_payload(queries_answers, len-sizeof(struct dns_header));
+                //print_payload(queries_answers, len-sizeof(struct dns_header));
                 printf("   ---\n");
         }
 
@@ -172,7 +160,7 @@ void print_dns(const u_char *payload, int len)
 void print_bootp(const u_char *payload, int len)
 {
 
-        const struct bootp *bootp;  /* The IP header */
+        const struct bootp *bootp;
         bootp = (struct bootp*)(payload);
 
         if ( verbosite == 1 )
@@ -215,14 +203,12 @@ void print_bootp(const u_char *payload, int len)
                 printf("   Boot file name option overloaded by DHCP : %s \n", bootp->bp_file);
                 printf("   Magic Cookie : (%02x%02x%02x%02x) DHCP \n", bootp->bp_vend[0],bootp->bp_vend[1],bootp->bp_vend[2],bootp->bp_vend[3]);
 
-
                 // OPT
                 // SIZE 290 - 8 ( UDP ) - 236 ( BOOTP )    46 options
                 int option_size;
                 const u_char *vendor;
                 vendor = (u_char *)(bootp->bp_vend+4);
                 option_size = len-236-4;
-
 
                 const u_char *ch = vendor;
                 int eol=0;
@@ -231,7 +217,6 @@ void print_bootp(const u_char *payload, int len)
                 {
                         for ( int i = 0; i < option_size; i++)
                         {
-
                                 switch ((int)*ch) {
                                 case 51: printf( "    Option: (%d) Ip Address Lease Time \n",*ch); break;
                                 case 52: printf( "    Option: (%d) Option overload \n",*ch); break;
@@ -267,7 +252,6 @@ void print_bootp(const u_char *payload, int len)
                                 }
                                 eol=0;
                                 ch++;
-
                         }
                         printf("\n");
                 }
@@ -276,14 +260,11 @@ void print_bootp(const u_char *payload, int len)
 
 void print_telnet(const u_char *payload, int len)
 {
-
         int i;
         int end_flag=0;
         const u_char *ch = payload;
 
-        /* ascii (if printable) */
         ch = payload;
-
 
         for(i = 0; i < len; i=i+3) {
                 printf("    ");
@@ -313,7 +294,6 @@ void print_telnet(const u_char *payload, int len)
                         printf("UNKNOWN ");
 
                 }
-
                 ch++;
 
                 if ( end_flag != 1 )
@@ -373,19 +353,13 @@ void print_telnet(const u_char *payload, int len)
                                         ch++;
                                         i++;
                                         j++;
-
                                         if ( j%16 == 0) printf("\n      ");
                                 }
                                 printf("\n");
-
                         }
                 }
-
                 end_flag=0;
-
-
         }
-
         printf("\n");
         return;
 
@@ -448,11 +422,9 @@ void print_ftp_http_imap_smtp_pop(const u_char *payload, int len,protocol_app p)
                                                 printf("\n    ");
                                                 cnt=0;
                                         }
-
                                 }
                                 ch++;
                         }
-
                 }
                 printf("\n");
         }
@@ -481,116 +453,19 @@ void print_ftp_http_imap_smtp_pop(const u_char *payload, int len,protocol_app p)
                                                 printf("\n");
                                                 cnt=0;
                                         }
-
                                 }
                                 ch++;
                         }
-
                 }
         }
-
-        return;
-
-
-}
-
-
-void print_hex_ascii_line(const u_char *payload, int len, int offset)
-{
-
-        int i;
-        int gap;
-        const u_char *ch;
-
-        /* offset */
-        printf("        %05d   ", offset);
-
-        /* hex */
-        ch = payload;
-        for(i = 0; i < len; i++) {
-                printf("%02x ", *ch);
-                ch++;
-                /* print extra space after 8th byte for visual aid */
-                if (i == 7)
-                        printf(" ");
-        }
-        /* print space to handle line less than 8 bytes */
-        if (len < 8)
-                printf(" ");
-
-        /* fill hex gap with spaces if not full line */
-        if (len < 16) {
-                gap = 16 - len;
-                for (i = 0; i < gap; i++) {
-                        printf("   ");
-                }
-        }
-        printf("   ");
-
-        /* ascii (if printable) */
-        ch = payload;
-        for(i = 0; i < len; i++) {
-                if (isprint(*ch))
-                        printf("%c", *ch);
-                else
-                        printf(".");
-                ch++;
-        }
-
-        printf("\n");
-
         return;
 }
 
-/*
- * print packet payload data (avoid printing binary data)
- */
-void print_payload(const u_char *payload, int len)
-{
-
-        int len_rem = len;
-        int line_width = 16; /* number of bytes per line */
-        int line_len;
-        int offset = 0;   /* zero-based offset counter */
-        const u_char *ch = payload;
-
-        if (len <= 0)
-                return;
-
-        /* data fits on one line */
-        if (len <= line_width) {
-                print_hex_ascii_line(ch, len, offset);
-                return;
-        }
-
-        /* data spans multiple lines */
-        for (;; ) {
-                /* compute current line length */
-                line_len = line_width % len_rem;
-                /* print line */
-                print_hex_ascii_line(ch, line_len, offset);
-                /* compute total remaining */
-                len_rem = len_rem - line_len;
-                /* shift pointer to remaining bytes to print */
-                ch = ch + line_len;
-                /* add offset */
-                offset = offset + line_width;
-                /* check if we have line width chars or less */
-                if (len_rem <= line_width) {
-                        /* print last line and get out */
-                        print_hex_ascii_line(ch, len_rem, offset);
-                        break;
-                }
-        }
-
-        return;
-}
 
 void print_ethernetheader(const struct ether_header *ethernet)
 {
-        printf("   Destination : %02x:%02x:%02x:%02x:%02x:%02x\n", ethernet->ether_shost[0],ethernet->ether_shost[1],ethernet->ether_shost[2],ethernet->ether_shost[3],ethernet->ether_shost[4],ethernet->ether_shost[5]); // NOT OK
-        printf("   Source : %02x:%02x:%02x:%02x:%02x:%02x\n", ethernet->ether_dhost[0],ethernet->ether_dhost[1],ethernet->ether_dhost[2],ethernet->ether_dhost[3],ethernet->ether_dhost[4],ethernet->ether_dhost[5]); // NOT OK
-
+        printf("   Destination : %02x:%02x:%02x:%02x:%02x:%02x\n", ethernet->ether_shost[0],ethernet->ether_shost[1],ethernet->ether_shost[2],ethernet->ether_shost[3],ethernet->ether_shost[4],ethernet->ether_shost[5]);
+        printf("   Source : %02x:%02x:%02x:%02x:%02x:%02x\n", ethernet->ether_dhost[0],ethernet->ether_dhost[1],ethernet->ether_dhost[2],ethernet->ether_dhost[3],ethernet->ether_dhost[4],ethernet->ether_dhost[5]);
 }
 
 void print_ipheader(const struct iphdr *ip)
@@ -612,7 +487,6 @@ void print_ipheader(const struct iphdr *ip)
                 printf("   Differentiated Services Field : %#04x \n",ip->tos );
                 printf("   Total Length : %d \n",__builtin_bswap16(ip->tot_len));
                 printf("   Identification : %#06x (%d) \n",__builtin_bswap16(ip->id), __builtin_bswap16(ip->id));
-                //  printf("    Flags : %#06x \n",);
                 printf("   Fragment offset : %d \n",ip->frag_off); // NOT OK
                 printf("   Time to live : %d\n",ip->ttl);
                 printf("   Header checksum : %#06x \n",__builtin_bswap16(ip->check));
@@ -625,9 +499,6 @@ void print_ipheader(const struct iphdr *ip)
 
 void print_tcpheader(const struct tcphdr *tcp,int tcp_len)
 {
-
-        /* define/compute tcp header offset */
-        // TOT LEN IP - ip hdr - tcp hdr
 
         printf("   Source port: %d\n", ntohs(tcp->th_sport));
         printf("   Destination port: %d\n", ntohs(tcp->th_dport));
@@ -658,8 +529,6 @@ void print_tcpheader(const struct tcphdr *tcp,int tcp_len)
         printf("   Window size value : %d \n",__builtin_bswap16(tcp->th_win));
         printf("   Checksum : %#06x \n",__builtin_bswap16(tcp->th_sum));
         printf("   Urgent pointer : %d \n",tcp->th_urp);
-
-
 
 }
 
@@ -758,8 +627,6 @@ void print_tcppayload(const struct tcphdr *tcp,int tcp_len,int size_ip,int ip_to
                 printf ("]\n");
         }
 
-
-
 }
 
 void print_udppayload(const struct udphdr *udp,int size_ip,int ip_tot_len,const u_char *packet){
@@ -794,7 +661,6 @@ void print_udppayload(const struct udphdr *udp,int size_ip,int ip_tot_len,const 
 
 void print_udpheader(const struct udphdr *udp)
 {
-
         printf("   Source port: %d\n", ntohs(udp->uh_sport));
         printf("   Destination port: %d\n", ntohs(udp->uh_dport));
         printf("   Length: %d\n", ntohs(udp->uh_ulen));
@@ -877,14 +743,16 @@ void print_arpheader(const struct my_arphdr *arp,const struct ether_header *ethe
 void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
 
-        static int count = 1;
+        static int count = 1; // Numerotation paquets
 
-        const struct ether_header *ethernet; /* The ethernet header [1] */
-        const struct iphdr *ip;        /* The IP header */
-        const struct tcphdr *tcp;      /* The TCP header */
-        const struct udphdr *udp;        /* The UDP header */
-        const struct my_arphdr *arp;      /* The TCP header */
+        // Structures header
+        const struct ether_header *ethernet;
+        const struct iphdr *ip;
+        const struct tcphdr *tcp;
+        const struct udphdr *udp;
+        const struct my_arphdr *arp;
 
+        // Tailles
         int size_ip;
         int size_tcp;
         int size_payload;
@@ -892,19 +760,13 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
         ethernet = (struct ether_header*)(packet);
         ip = (struct iphdr*)(packet + sizeof(struct ether_header));
 
-
-
-
         printf("-------------------------------------\n");
-
 
         switch(ntohs(ethernet->ether_type)) {
         case ETHERTYPE_IP:
                 paquet_srcaddr.s_addr = ip->saddr;
                 paquet_dstaddr.s_addr = ip->daddr;
-
                 paquet_count=count;
-
                 paquet_length = __builtin_bswap16(ip->tot_len) + sizeof(struct ether_header);
 
                 if ( verbosite >= 2 )
@@ -916,14 +778,18 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                 }
 
                 if ( verbosite >= 2 )
-                { printf(" Ethernet II, ");
-                  printf("Src: %02x:%02x:%02x:%02x:%02x:%02x, ", ethernet->ether_dhost[0],ethernet->ether_dhost[1],ethernet->ether_dhost[2],ethernet->ether_dhost[3],ethernet->ether_dhost[4],ethernet->ether_dhost[5]);
-                  printf("Dst: %02x:%02x:%02x:%02x:%02x:%02x\n", ethernet->ether_shost[0],ethernet->ether_shost[1],ethernet->ether_shost[2],ethernet->ether_shost[3],ethernet->ether_shost[4],ethernet->ether_shost[5]); }
+                {
+                        printf(" Ethernet II, ");
+                        printf("Src: %02x:%02x:%02x:%02x:%02x:%02x, ", ethernet->ether_dhost[0],ethernet->ether_dhost[1],ethernet->ether_dhost[2],ethernet->ether_dhost[3],ethernet->ether_dhost[4],ethernet->ether_dhost[5]);
+                        printf("Dst: %02x:%02x:%02x:%02x:%02x:%02x\n", ethernet->ether_shost[0],ethernet->ether_shost[1],ethernet->ether_shost[2],ethernet->ether_shost[3],ethernet->ether_shost[4],ethernet->ether_shost[5]);
+                }
                 if ( verbosite == 3 ) print_ethernetheader(ethernet);
 
                 size_ip = ip->ihl*4;
+
                 if ( verbosite == 3 ) printf("   Type : IPv4 (%#06x) \n", ntohs(ethernet->ether_type));
                 if ( verbosite >= 2 ) printf("\n Internet Protocol Version 4, ");
+
                 print_ipheader(ip);
 
                 switch(ip->protocol ) {
@@ -943,15 +809,11 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                         return;
                 case IPPROTO_UDP:
 
-                        if ( verbosite == 3 ) printf("   Protocol: UDP (%d)\n",ip->protocol);
                         udp = (struct udphdr*)(packet + sizeof(struct ether_header) + size_ip);
-
-
-
+                        if ( verbosite == 3 ) printf("   Protocol: UDP (%d)\n",ip->protocol);
                         if ( verbosite >= 2 ) printf("\n User Datagram Protocol, Src Port: %d, Dst Port: %d \n",ntohs(udp->uh_sport),ntohs(udp->uh_dport));
                         if ( verbosite == 3 ) print_udpheader(udp);
                         print_udppayload(udp,size_ip,ntohs(ip->tot_len),packet);
-
                         return;
                 case IPPROTO_ICMP:
 
@@ -972,11 +834,9 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
                 paquet_srcaddr.s_addr = ip->saddr;
                 paquet_dstaddr.s_addr = ip->daddr;
-
                 paquet_count=count;
                 size_payload = 60 - (sizeof(struct ether_header) + sizeof(struct my_arphdr));
                 paquet_length = sizeof(struct my_arphdr) + sizeof(struct ether_header)+size_payload;
-
 
                 if ( verbosite >= 2 )
                 {
@@ -986,11 +846,12 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                         printf("- Protocol : ARP - Length : %d  \n\n",paquet_length);
                 }
 
-
                 if ( verbosite >= 2 )
-                { printf(" Ethernet II, ");
-                  printf("Src: %02x:%02x:%02x:%02x:%02x:%02x, ", ethernet->ether_dhost[0],ethernet->ether_dhost[1],ethernet->ether_dhost[2],ethernet->ether_dhost[3],ethernet->ether_dhost[4],ethernet->ether_dhost[5]);
-                  printf("Dst: %02x:%02x:%02x:%02x:%02x:%02x\n", ethernet->ether_shost[0],ethernet->ether_shost[1],ethernet->ether_shost[2],ethernet->ether_shost[3],ethernet->ether_shost[4],ethernet->ether_shost[5]); }
+                {
+                        printf(" Ethernet II, ");
+                        printf("Src: %02x:%02x:%02x:%02x:%02x:%02x, ", ethernet->ether_dhost[0],ethernet->ether_dhost[1],ethernet->ether_dhost[2],ethernet->ether_dhost[3],ethernet->ether_dhost[4],ethernet->ether_dhost[5]);
+                        printf("Dst: %02x:%02x:%02x:%02x:%02x:%02x\n", ethernet->ether_shost[0],ethernet->ether_shost[1],ethernet->ether_shost[2],ethernet->ether_shost[3],ethernet->ether_shost[4],ethernet->ether_shost[5]);
+                }
                 if ( verbosite == 3 ) print_ethernetheader(ethernet);
                 if ( verbosite == 3 ) printf("   Type : ARP (%#06x) \n", ntohs(ethernet->ether_type));
 
@@ -1013,7 +874,6 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                 break;
         }
         count++;
-
 }
 
 void usage(char *prog)
@@ -1036,7 +896,6 @@ int main(int argc, char **argv)
         char filtre[1024];
 
         int nb = 0;
-
 
         while ((c = getopt(argc, argv, "i:o:f:v:")) != -1)
                 switch (c) {
@@ -1074,26 +933,20 @@ int main(int argc, char **argv)
 
         printf("Verbosité : %d \n",verbosite);
 
+        // Variables Pcap
+        char errbuf[PCAP_ERRBUF_SIZE];
+        pcap_t *handle;
 
-        char errbuf[PCAP_ERRBUF_SIZE]; /* error buffer */
-        pcap_t *handle; /* packet capture handle */
-
-        char filter_exp[] = "ip"; /* filter expression [3] */
-        struct bpf_program fp; /* compiled filter program (expression) */
-
-        bpf_u_int32 net=0; /* ip */
-        int num_packets = 10;                  /* number of packets to capture */
-
-
-        /* print capture info */
-
+        struct bpf_program fp;
+        bpf_u_int32 net=0;
+        int num_packets = 10;
 
 
         if ( fflag == 1)
                 printf("Filter expression: %s\n", filtre);
 
         // Online
-        /* open capture device */
+        // Configuration pcap
         if ( iflag == 1 )
         {
                 printf("Live capture \n");
@@ -1110,21 +963,27 @@ int main(int argc, char **argv)
                         exit(EXIT_FAILURE);
                 }
 
-
-                if (pcap_compile(handle, &fp, filter_exp, 0, net) == -1) {
-                        fprintf(stderr, "Couldn't parse filter %s: %s\n",
-                                filter_exp, pcap_geterr(handle));
-                        exit(EXIT_FAILURE);
+                if ( fflag == 1 )
+                {
+                        if (pcap_compile(handle, &fp, filtre, 0, net) == -1) {
+                                fprintf(stderr, "Error filter ( %s ) : %s\n", filtre, pcap_geterr(handle));
+                                return -1;
+                        }
+                }
+                else {
+                        if (pcap_compile(handle, &fp, NULL, 0, net) == -1) {
+                                fprintf(stderr, "Error filter ( %s ) : %s\n", filtre, pcap_geterr(handle));
+                                return -1;
+                        }
                 }
 
 
                 if (pcap_setfilter(handle, &fp) == -1) {
-                        fprintf(stderr, "Couldn't install filter %s: %s\n",
-                                filter_exp, pcap_geterr(handle));
+                        fprintf(stderr, "Error setfilter : %s\n", pcap_geterr(handle));
                         exit(EXIT_FAILURE);
                 }
 
-
+                // Analyse des paquets
                 pcap_loop(handle, num_packets, got_packet, NULL);
 
 
@@ -1140,26 +999,26 @@ int main(int argc, char **argv)
                 handle = pcap_open_offline(fichier, errbuf);
 
                 if (handle == NULL) {
-                        fprintf(stderr, "Erreur pcap_open_offline (file : %s ) : %s\n", fichier, errbuf);
+                        fprintf(stderr, "Error pcap_open_offline (file : %s ) : %s\n", fichier, errbuf);
                         return -1;
                 }
 
                 if ( fflag == 1 )
                 {
                         if (pcap_compile(handle, &fp, filtre, 0, net) == -1) {
-                                fprintf(stderr, "Erreur filtre expression ( %s ) : %s\n", filtre, pcap_geterr(handle));
+                                fprintf(stderr, "Error filter ( %s ) : %s\n", filtre, pcap_geterr(handle));
                                 return -1;
                         }
                 }
                 else {
                         if (pcap_compile(handle, &fp, NULL, 0, net) == -1) {
-                                fprintf(stderr, "Erreur filtre expression ( %s ) : %s\n", filtre, pcap_geterr(handle));
+                                fprintf(stderr, "Error filter ( %s ) : %s\n", filtre, pcap_geterr(handle));
                                 return -1;
                         }
                 }
 
                 if (pcap_setfilter(handle, &fp) == -1) {
-                        fprintf(stderr, "Erreur pcap_setfilter : %s\n", pcap_geterr(handle));
+                        fprintf(stderr, "Error setfilter : %s\n", pcap_geterr(handle));
                         return -1;
                 }
 
