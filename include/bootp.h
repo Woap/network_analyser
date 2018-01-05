@@ -61,6 +61,7 @@ struct bootp {
         char bp_file[BP_FILE_LEN];    /* boot file name */
         unsigned char bp_vend[BP_VEND_LEN]; /* vendor-specific area */
         /* note that bp_vend can be longer, extending to end of packet. */
+
 };
 
 /*
