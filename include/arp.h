@@ -1,5 +1,5 @@
-#ifndef PRINT_FUNCTIONS_H
-#define PRINT_FUNCTIONS_H
+#ifndef ARP_H
+#define ARP_H
 
 struct my_arphdr {
         u_int16_t ar_hrd; /* Hardware Type           */
@@ -12,6 +12,5 @@ struct my_arphdr {
         u_char ar_tha[6];  /* Target Mac address */
         u_char ar_tip[4];  /* Target IP address       */
 };
-
 
 #endif

@@ -11,7 +11,6 @@
 #include <netinet/in.h>
 
 
-
 //Types of DNS resource records :)
 
 #define T_A 1 //Ipv4 address
