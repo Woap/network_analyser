@@ -19,17 +19,17 @@ Plusieurs captures sont fournis dans le dossier src/traces/ afin de pouvoir fair
 Les protocoles disponibles sont : Ethernet, IP, TCP, UDP, HTTP, TELNET, ARP, BOOTP/DHCP, FTP, IMAP, SMTP, POP.
 
 Trois types d’affichage sont possibles
-        − très concis : une ligne par trame ( -v 1 )
+      
+	− très concis : une ligne par trame ( -v 1 )
         
-	![alt text](https://image.noelshack.com/fichiers/2018/01/6/1515227491-concis.png)
+![alt text](https://image.noelshack.com/fichiers/2018/01/6/1515227491-concis.png)
 
-        − synthétique : une ligne par protocole, soit quelques lignes par trame  ( -v 2 )
+	− synthétique : une ligne par protocole, soit quelques lignes par trame  ( -v 2 )
         
-	![alt text](https://image.noelshack.com/fichiers/2018/01/6/1515227491-v2.png)
+![alt text](https://image.noelshack.com/fichiers/2018/01/6/1515227491-v2.png)
 
-        − complet : la totalité des champs protocolaires et des contenus applicatifs  ( -v 3 )
-        
-	![alt text](https://image.noelshack.com/fichiers/2018/01/6/1515227491-full.png)
+	− complet : la totalité des champs protocolaires et des contenus applicatifs  ( -v 3 )
+![alt text](https://image.noelshack.com/fichiers/2018/01/6/1515227491-full.png)
 
 
 
