@@ -16,7 +16,7 @@ obj/analyse.o : src/analyse.c
 	mv analyse.o obj/
 
 archive :
-	tar -czvf archive_analyseur_ibis.tar.gz ./
+	tar -czvf archive_analyseur_ibis.tar.gz *
 
 clean :
 	rm -rf obj/* bin/analyse

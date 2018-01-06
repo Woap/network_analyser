@@ -222,7 +222,7 @@ int main(int argc, char **argv)
 
         struct bpf_program fp;
         bpf_u_int32 net=0;
-        int num_packets = 10;
+
 
 
         if ( fflag == 1)
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
         {
                 printf("Live capture \n");
                 printf("Interface: %s\n", interface);
-                printf("Number of packets: %d\n", num_packets);
+
                 handle = pcap_open_live(interface, SNAP_LEN, 1, 1000, errbuf);
                 if (handle == NULL) {
                         fprintf(stderr, "Couldn't open device %s: %s\n", interface, errbuf);
@@ -278,7 +278,7 @@ int main(int argc, char **argv)
                 //Offline
                 printf("Offline capture \n ");
                 printf("File: %s\n", fichier);
-                printf("Number of packets: %d\n", num_packets);
+
                 handle = pcap_open_offline(fichier, errbuf);
 
                 if (handle == NULL) {

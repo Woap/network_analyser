@@ -105,12 +105,134 @@ void print_dns(const u_char *payload, int len,int verbosite,int count)
                 printf("           Additional RRs: %d\n",__builtin_bswap16(dns->additional));
                 printf("           Queries\n");
 
-                //const u_char *queries_answers;
-                //queries_answers = (u_char *)(payload+ sizeof(struct dns_header));
+                int queries_answers_size;
+                const u_char *queries_answers;
+                queries_answers = (u_char *)(payload+ sizeof(struct dns_header));
+                queries_answers_size = len-sizeof(struct dns_header);
 
-                printf("           ---\n");
-                //print_payload(queries_answers, len-sizeof(struct dns_header));
-                printf("           ---\n");
+
+                const u_char *ch = queries_answers;
+
+                ch = queries_answers;
+
+                char save[1024];
+                int size = 0;
+                int answer = 0;
+                int data_len = 0;
+                int k = 0;
+
+
+                if ( queries_answers_size > 0 )
+                {
+                        for ( int i = 0; i < queries_answers_size; i++)
+                        {
+                                if ( *ch == 0xc0 )
+                                {
+                                        ch++;
+                                        i++;
+                                        if ( *ch == 0x0c )
+                                        {
+                                                answer++;
+                                                if ( answer == 1)
+                                                        printf("           Answers\n");
+                                                printf("            Name : ");
+                                                printf("%.*s ", size, save);
+                                        }
+                                }
+                                else
+                                {
+                                        printf("            Name : ");
+                                        while (*ch != 0x00)
+                                        {
+                                                if ( k != 0)
+                                                {
+                                                        if (isprint(*ch))
+                                                        {
+                                                                printf("%c", *ch);
+                                                                save[size]=*ch;
+                                                                size++;
+                                                        }
+                                                        else
+                                                        {
+                                                                printf(".");
+
+
+                                                                save[size]='.';
+                                                                size++;
+
+
+                                                        }
+                                                }
+                                                k++;
+                                                i++;
+                                                ch++;
+                                        }
+                                        k=0;
+                                        printf(": ");
+                                }
+                                ch++; i++;
+                                ch++; i++;
+
+                                switch (*ch) {
+                                case 1: printf("Type A (%d)", *ch); break;
+                                case 2: printf("Type NS (%d)", *ch); break;
+                                case 12: printf("Type PTR (%d)", *ch); break;
+                                case 255: printf("Type ANY (%d)", *ch); break;
+                                case 28: printf("Type AAAA (%d)", *ch); break;
+                                case 29: printf("Type LOC (%d)", *ch); break;
+                                case 15: printf("Type MX (%d)", *ch); break;
+                                case 16: printf("Type TXT (%d)", *ch); break;
+                                case 33: printf("Type SRV (%d)", *ch); break;
+                                default: printf("Type UNKNOWN (%d)", *ch); break;
+                                }
+
+                                ch++; i++;
+                                ch++; i++;
+
+                                if ( answer )
+                                {
+                                        switch (*ch) {
+                                        case 1: printf(", Class IN (%#05x), ", *ch); break;
+                                        default: printf(", Class UNKNOWN (%d), ", *ch); break;
+                                        }
+                                }
+                                else {
+                                        switch (*ch) {
+                                        case 1: printf(", Class IN (%#05x)\n", *ch); break;
+                                        default: printf(", Class UNKNOWN (%d)\n", *ch); break;
+                                        }
+
+                                }
+
+                                if ( answer )
+                                {
+                                        for ( int j = 0; j < 4; j++)
+                                        {
+                                                ch++; i++;
+                                        }
+                                        ch++; i++;
+                                        ch++; i++;
+                                        data_len = *ch;
+                                        for ( int j = 0; j < data_len; j++)
+                                        {
+                                                ch++;
+                                                i++;
+                                                if ( j < data_len-1 && j != 0)
+                                                {
+                                                        if (isprint(*ch))
+                                                                printf("%c", *ch);
+                                                        else
+                                                                printf(".");
+                                                }
+                                        }
+                                        printf("%.*s\n", size, save);
+                                }
+                                ch++;
+                                i++;
+
+                        }
+                        printf("\n");
+                }
         }
 
 }
