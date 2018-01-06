@@ -6,13 +6,13 @@
 Après avoir effectué la commande make, le programme peut être lancé comme ci- dessous :
 	
 	Capture en ligne : 
-./bin/analyse -i <interface> -v <1..3> 
+	./bin/analyse -i <interface> -v <1..3> 
 
-Depuis un fichier : 
-./bin/analyse -o <fichier_capture> -v <1..3> 
+	Depuis un fichier : 
+	./bin/analyse -o <fichier_capture> -v <1..3> 
 
-Application d’un filtre : 
-./bin/analyse -i <interface> -v <1..3> -f ‘src port 80’
+	Application d’un filtre : 
+	./bin/analyse -i <interface> -v <1..3> -f ‘src port 80’
 
 Plusieurs captures sont fournis dans le dossier src/traces/ afin de pouvoir faire des tests
 
