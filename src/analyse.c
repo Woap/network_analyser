@@ -70,7 +70,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 
                 size_ip = ip->ihl*4;
 
-                if ( verbosite == 3 ) printf("   Type : IPv4 (%#06x) \n", ntohs(ethernet->ether_type));
+                if ( verbosite == 3 ) printf("   ╚═ Type : IPv4 (%#06x) \n", ntohs(ethernet->ether_type));
                 if ( verbosite >= 2 ) printf("\n   Internet Protocol Version 4, ");
 
                 print_ipheader(ip,verbosite,count);
@@ -78,7 +78,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                 switch(ip->protocol ) {
                 case IPPROTO_TCP: // TCP
 
-                        if ( verbosite == 3 ) printf("      Protocol: TCP (%d)\n",ip->protocol);
+                        if ( verbosite == 3 ) printf("      ╚═ Protocol: TCP (%d)\n",ip->protocol);
                         tcp = (struct tcphdr*)(packet + sizeof(struct ether_header) + size_ip);
                         size_tcp = tcp->th_off*4;
                         int tcp_len = __builtin_bswap16(ip->tot_len)-size_ip-size_tcp;
@@ -93,22 +93,22 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                 case IPPROTO_UDP: // UDP
 
                         udp = (struct udphdr*)(packet + sizeof(struct ether_header) + size_ip);
-                        if ( verbosite == 3 ) printf("      Protocol: UDP (%d)\n",ip->protocol);
+                        if ( verbosite == 3 ) printf("      ╚═ Protocol: UDP (%d)\n",ip->protocol);
                         if ( verbosite >= 2 ) printf("\n      User Datagram Protocol, Src Port: %d, Dst Port: %d \n",ntohs(udp->uh_sport),ntohs(udp->uh_dport));
                         if ( verbosite == 3 ) print_udpheader(udp,verbosite,count);  // Affichage header udp
                         print_udppayload(udp,size_ip,ntohs(ip->tot_len),packet,verbosite,count); // Affichage du contenu udp
                         return;
                 case IPPROTO_ICMP: // ICMP
 
-                        if ( verbosite == 3 ) printf("      Protocol: ICMP (%d)\n",ip->protocol);
+                        if ( verbosite == 3 ) printf("      ╚═ Protocol: ICMP (%d)\n",ip->protocol);
                         return;
                 case IPPROTO_IP: // IP
 
-                        if ( verbosite == 3 ) printf("      Protocol: IP (%d)\n",ip->protocol);
+                        if ( verbosite == 3 ) printf("      ╚═ Protocol: IP (%d)\n",ip->protocol);
                         return;
                 default:
 
-                        if ( verbosite == 3 ) printf("      Protocol: unknown\n");
+                        if ( verbosite == 3 ) printf("      ╚═ Protocol: unknown\n");
                         return;
                 }
                 break;
@@ -136,10 +136,10 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
                         printf("Dst: %02x:%02x:%02x:%02x:%02x:%02x\n", ethernet->ether_shost[0],ethernet->ether_shost[1],ethernet->ether_shost[2],ethernet->ether_shost[3],ethernet->ether_shost[4],ethernet->ether_shost[5]);
                 }
                 if ( verbosite == 3 ) print_ethernetheader(ethernet,verbosite,count);  // Affichage header ethernet
-                if ( verbosite == 3 ) printf("   Type : ARP (%#06x) \n", ntohs(ethernet->ether_type));
+                if ( verbosite == 3 ) printf("   ╠═ Type : ARP (%#06x) \n", ntohs(ethernet->ether_type));
 
                 if (size_payload > 0) {
-                        if ( verbosite == 3 ) printf("   Padding (%d bytes) \n", size_payload);
+                        if ( verbosite == 3 ) printf("   ╚═ Padding (%d bytes) \n", size_payload);
                 }
 
                 if ( verbosite >= 2 ) printf("\n   Address Resolution Protocol \n");
