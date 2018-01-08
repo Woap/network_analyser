@@ -227,6 +227,9 @@ void print_dns(const u_char *payload, int len,int verbosite,int count)
                 int data_len = 0;
                 int k = 0;
 
+                int type_aaaa=0;
+                int type_a=0;
+
 
                 if ( queries_answers_size > 0 )
                 {
@@ -279,11 +282,12 @@ void print_dns(const u_char *payload, int len,int verbosite,int count)
 
 
                                 switch (*ch) {
-                                case 1: printf("Type A (%d)", *ch); break;
+                                case 1: printf("Type A (%d)", *ch); type_a++; break;
                                 case 2: printf("Type NS (%d)", *ch); break;
+                                case 5: printf("Type CNAME (%d)", *ch); break;
                                 case 12: printf("Type PTR (%d)", *ch); break;
                                 case 255: printf("Type ANY (%d)", *ch); break;
-                                case 28: printf("Type AAAA (%d)", *ch); break;
+                                case 28: printf("Type AAAA (%d)", *ch); type_aaaa++; break;
                                 case 29: printf("Type LOC (%d)", *ch); break;
                                 case 15: printf("Type MX (%d)", *ch); break;
                                 case 16: printf("Type TXT (%d)", *ch); break;
@@ -318,22 +322,62 @@ void print_dns(const u_char *payload, int len,int verbosite,int count)
                                         ch++; i++;
                                         ch++; i++;
                                         data_len = *ch;
-                                        for ( int j = 0; j < data_len; j++)
+                                        if ( !type_a && !type_aaaa)
                                         {
-                                                ch++;
-                                                i++;
-                                                if ( j < data_len-1 && j != 0)
+                                                for ( int j = 0; j < data_len; j++)
                                                 {
-                                                        if (isprint(*ch))
-                                                                printf("%c", *ch);
-                                                        else
-                                                                printf(".");
+                                                        ch++;
+                                                        i++;
+                                                        if ( j < data_len-1 && j != 0)
+                                                        {
+                                                                if (isprint(*ch))
+                                                                        printf("%c", *ch);
+                                                                else
+                                                                        printf(".");
+                                                        }
                                                 }
+                                                //printf("%.*s\n", size, save);
+                                                printf("\n");
                                         }
-                                        printf("%.*s\n", size, save);
+                                        else if ( type_aaaa )
+                                        {
+                                                printf("addr ");
+                                                for ( int j = 0; j < data_len; j++)
+                                                {
+                                                        if ( j%2 == 0 && j != 0)
+                                                                printf(":");
+                                                        ch++;
+                                                        i++;
+                                                        printf("%02x", *ch);
+
+
+                                                }
+
+                                                printf("\n");
+                                        }
+                                        else
+                                        {
+                                                printf("addr ");
+                                                for ( int j = 0; j < data_len; j++)
+                                                {
+                                                        ch++;
+                                                        i++;
+                                                        printf("%d", *ch);
+                                                        if ( j < data_len-1)
+                                                                printf(":");
+
+
+                                                }
+
+                                                printf("\n");
+                                        }
+
+
                                 }
                                 ch++;
                                 i++;
+                                type_aaaa=0;
+                                type_a=0;
 
                         }
                         printf("           ╚═\n");

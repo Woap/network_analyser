@@ -308,6 +308,10 @@ int main(int argc, char **argv)
                 // Analyse des paquets
                 pcap_loop(handle, -1, got_packet, NULL);
 
+
+                pcap_freecode(&fp);
+                pcap_close(handle);
+
         }
         printf("\nCapture complete.\n");
 
